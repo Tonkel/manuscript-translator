@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+dist/
+*.db
+*.db-journal
+.env
+.env.local
+.DS_Store
+*.log
+.vscode/
+.idea/
+coverage/
+.turbo/
+next-env.d.ts
