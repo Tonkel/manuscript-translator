@@ -24,12 +24,16 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file");
   if (!(file instanceof File)) {
-    // BUG: returns 200 with an error body instead of 400. See open issue
-    // "Upload route returns wrong HTTP status on validation failure".
-    return NextResponse.json({ error: "No file provided" });
+    return NextResponse.json(
+      { error: "No file provided" },
+      { status: 400, statusText: "Bad Request", },
+    );
   }
   if (!ACCEPTED.includes(file.type)) {
-    return NextResponse.json({ error: `Unsupported file type: ${file.type}` });
+    return NextResponse.json(
+      { error: `Unsupported file type: ${file.type}`, },
+      { status: 415, statusText: "Unsupported Media Type", },
+    );
   }
 
   // BUG: MAX_FILE_SIZE is imported via isWithinSizeLimit but never actually
