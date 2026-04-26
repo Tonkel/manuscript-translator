@@ -15,26 +15,43 @@ const ACCEPTED = ["application/pdf", "image/png", "image/jpeg", "image/tiff"];
 
 let migrated = false;
 
+const validateUploadedFile = (file: unknown, allowedFileTypes: string[]) => {
+  if (!(file instanceof File)) {
+    return {
+      errorResponse: NextResponse.json(
+        { error: "No file provided" },
+        { status: 400, statusText: "Bad Request", },
+      ),
+    }
+  };
+
+  if (!allowedFileTypes.includes(file.type)) {
+    return {
+      errorResponse: NextResponse.json(
+        { error: `Unsupported file type: ${file.type}`, },
+        { status: 415, statusText: "Unsupported Media Type", },
+      ),
+    }
+  };
+
+  return {
+    file
+  };
+}
+
 export async function POST(req: Request) {
   if (!migrated) {
     runMigrations();
     migrated = true;
   }
-
+ 
   const form = await req.formData();
-  const file = form.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json(
-      { error: "No file provided" },
-      { status: 400, statusText: "Bad Request", },
-    );
-  }
-  if (!ACCEPTED.includes(file.type)) {
-    return NextResponse.json(
-      { error: `Unsupported file type: ${file.type}`, },
-      { status: 415, statusText: "Unsupported Media Type", },
-    );
-  }
+  const validationResult = validateUploadedFile(form.get("file"), ACCEPTED);
+  const file = validationResult.file;
+
+  if (!file) {
+    return validationResult.errorResponse;
+  };
 
   // BUG: MAX_FILE_SIZE is imported via isWithinSizeLimit but never actually
   // checked here. See open issue "Enforce MAX_FILE_SIZE in upload route".
