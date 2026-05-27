@@ -8,3 +8,5 @@ export const ALLOWED_MIME_TYPES = [
 ] as const;
 
 export const DEFAULT_TARGET_LANGUAGE = "en";
+
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
