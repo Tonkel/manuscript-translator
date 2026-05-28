@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent } from "react";
-
-// Note: validation logic here is duplicated with the upload route. See open
-// issue "Extract shared validation helper".
-const ACCEPTED = ["application/pdf", "image/png", "image/jpeg", "image/tiff"];
+import { validateManuscriptFile } from "@/lib/validation";
 
 export default function Dropzone() {
   const [status, setStatus] = useState<string>("Idle");
@@ -12,10 +9,13 @@ export default function Dropzone() {
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!ACCEPTED.includes(file.type)) {
-      setStatus(`Unsupported file type: ${file.type}`);
+
+    const validation = validateManuscriptFile({ type: file.type, size: file.size });
+    if (!validation.ok) {
+      setStatus(`Error: ${validation.reason}`);
       return;
     }
+
     setStatus("Uploading...");
     const fd = new FormData();
     fd.append("file", file);
