@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { isAllowedMimeType, isWithinSizeLimit } from "../../lib/validation";
+import {
+  isAllowedMimeType,
+  isWithinSizeLimit,
+  validateManuscriptFile,
+} from "../../lib/validation";
+import { MAX_FILE_SIZE } from "../../lib/config";
 
 describe("validation", () => {
   it("accepts known mime types", () => {
@@ -15,5 +20,65 @@ describe("validation", () => {
     expect(isWithinSizeLimit(100, 1000)).toBe(true);
     expect(isWithinSizeLimit(0, 1000)).toBe(false);
     expect(isWithinSizeLimit(2000, 1000)).toBe(false);
+  });
+
+  describe("validateManuscriptFile", () => {
+    it("accepts valid PDF files", () => {
+      const result = validateManuscriptFile({
+        type: "application/pdf",
+        size: 1024,
+      });
+      expect(result).toEqual({ ok: true });
+    });
+
+    it("accepts valid image files", () => {
+      expect(
+        validateManuscriptFile({ type: "image/png", size: 1024 })
+      ).toEqual({ ok: true });
+      expect(
+        validateManuscriptFile({ type: "image/jpeg", size: 1024 })
+      ).toEqual({ ok: true });
+      expect(
+        validateManuscriptFile({ type: "image/tiff", size: 1024 })
+      ).toEqual({ ok: true });
+    });
+
+    it("rejects unsupported file types", () => {
+      const result = validateManuscriptFile({
+        type: "text/plain",
+        size: 1024,
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toContain("Unsupported file type");
+      }
+    });
+
+    it("rejects files that are too large", () => {
+      const result = validateManuscriptFile({
+        type: "application/pdf",
+        size: MAX_FILE_SIZE + 1,
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toContain("File size must be between");
+      }
+    });
+
+    it("rejects files with zero size", () => {
+      const result = validateManuscriptFile({
+        type: "application/pdf",
+        size: 0,
+      });
+      expect(result.ok).toBe(false);
+    });
+
+    it("accepts files at maximum size limit", () => {
+      const result = validateManuscriptFile({
+        type: "application/pdf",
+        size: MAX_FILE_SIZE,
+      });
+      expect(result).toEqual({ ok: true });
+    });
   });
 });
