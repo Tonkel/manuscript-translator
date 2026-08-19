@@ -1,11 +1,11 @@
-# Manucript Translator
+# Manuscript Translator
 
 A web app for translating scanned historical manuscripts to English while preserving
 the original layout (backgrounds, illuminations, hand-drawn art).
 
-You drop a PDF or image of a Manucript page, the app runs OCR on the regions of text,
+You drop a PDF or image of a manuscript page, the app runs OCR on the regions of text,
 translates each region, and produces a new PDF with English text overlaid on the original
-artwork. No errors should have occured during this round-trip if everything works.
+artwork. No errors should have occurred during this round-trip if everything works.
 
 ## Stack
 
